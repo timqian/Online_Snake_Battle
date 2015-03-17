@@ -1,0 +1,167 @@
+<!DOCTYPE html >
+<html>
+<head>
+    <title>Snake game</title>
+	<style>
+		body {
+		  width: 400px;
+		  margin: auto;
+		}
+		#c {
+		  border: 2px solid #d3d3d3;
+		  margin-top: 10px;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="c" width="400" height="400"></canvas>
+	<p>用ASDW键控制，不要直接后退</p>
+
+	<script type="text/javascript" src='snakeAndFood.js'></script>
+	<script src="/socket.io/socket.io.js"></script>
+<!--	
+	<script type="text/javascript" src='drawer.js'></script>
+-->
+	<script>
+	/*
+	变量：
+		w,h: playground的数据长宽; 
+		pw,ph: pixal width and height;
+		D: 按键对象
+		pb: 蛇数组(pixals of body)
+		pf: 食物位置			
+	*/
+
+
+/*************************************************8画家**************************************/
+	var c  = document.getElementById('c'), ctx = c.getContext('2d'), pw = c.width / w, ph = c.height / h; //w,s 在snakeAndFood.js中定义
+	ctx.mdo = function (f, a) { return ctx[f].apply(ctx, a), ctx; };
+	ctx.mset = function (f, v) { return ctx[f] = v, ctx; };
+	
+	Array.prototype.draw = function (type, color) {
+		if (type == 'snake') {
+			//head
+			ctx.mset('strokeStyle', '#fff').mdo('strokeRect', [this[0].x * pw, this[0].y * ph, pw, ph]).mset('fillStyle', color).mdo('fillRect', [this[0].x * pw, this[0].y * ph, pw, ph]); 
+			//body
+			for (var i = this.length - 1; i >= 1; i--) {
+				ctx.mset('strokeStyle', '#fff').mdo('strokeRect', [this[i].x * pw, this[i].y * ph, pw, ph]).mset('fillStyle', '#aaa').mdo('fillRect', [this[i].x * pw, this[i].y * ph, pw, ph]); 
+			};
+		} else {
+			for (var i = this.length - 1; i >= 0; i--) {
+				ctx.mset('strokeStyle', '#fff').mdo('strokeRect', [this[i].x * pw, this[i].y * ph, pw, ph]).mset('fillStyle', '#e96900').mdo('fillRect', [this[i].x * pw, this[i].y * ph, pw, ph]); 
+			};
+		}
+	}
+
+	function drawGover () {  //写game over
+		ctx.mset('fillStyle', '#e96900').mset('font', 'bold 24px 宋体').mdo('fillText', ['游戏结束', (c.width - 24 * 4) / 2, (c.height - 24) / 2]); 
+	}
+
+	function drawSnakeAndFood () {
+		ctx.mset('fillStyle', '#f1fedd').mdo('fillRect', [0, 0, c.width, c.height]); //画画布
+		food.draw('food');
+		snake1.body.draw('snake', 'green');
+		snake2.body.draw('snake', 'blue');
+	}
+/////////////////////////////////////////////////////////////////////////////
+
+/*接受server消息，改变snake的方向*********************************************************/
+
+var socket = io();
+
+var isSnake1 = false;
+
+socket.on('snake1', function(){
+	console.log('i am snake1');
+	isSnake1 = true;
+});
+
+
+var tid;
+socket.on('start', function(){
+	tid = setTimeout(gloop, 200);
+});
+
+socket.on('dir', function(data) {  //接受服务端dir
+	console.log(data);
+	if (isSnake1){
+		snake1.dir = data[0]; snake2.dir = data[1];
+	} else {
+		snake1.dir = data[0];snake2.dir = data[1];
+	}
+});
+
+/*
+if (isSnake1) {
+	snake1.dir = remoteDir[0];
+	snake2.dir = remoteDir[1];
+}
+else {
+	snake1.dir = remoteDir[0];
+	snake2.dir = remoteDir[1];
+}*/
+
+/////////////////////////////////////////////////////////////////////////
+
+
+/***********************************捕捉屏幕滑动*************************************/
+	var localDir;  //本地捕捉到的方向
+
+	var xs=0,ys=0;  //在外面后面才能访问到
+	window.addEventListener('touchstart', function(e) {
+		xs = e.touches[0].clientX;
+	  ys = e.touches[0].clientY;
+	  //console.log(xs);
+	});
+	window.addEventListener('touchmove', function(e) {
+		var dx = e.changedTouches[0].clientX - xs;
+	  var dy = e.changedTouches[0].clientY - ys;
+	  //console.log(dx);
+    if (dx < 0 & Math.abs(dx) > Math.abs(dy)) {
+        localDir = 3;
+    } else if(dx > 0 & Math.abs(dx) > Math.abs(dy)){
+        localDir = 4;
+    } else if(dy < 0 & Math.abs(dx) < Math.abs(dy)){
+        localDir = 1;
+    } else {
+        localDir = 2;
+    }
+		//根据是否snake1来判断localDir与哪条蛇方向不同时发送消息
+		if(isSnake1) {   
+			if (localDir != snake1.dir) {
+				socket.emit('dir', localDir);
+			}
+		}
+		else {
+			if (localDir != snake2.dir) {
+				socket.emit('dir', localDir)
+			}
+		}
+		///////////////////////////////////////////////////
+	});
+	var D = {97: 3, 115: 2, 100: 4, 119: 1}; 
+	window.addEventListener('keypress', function (e) { //由按键改变direction 
+		if (D[e.which]) localDir = D[e.which]; 
+		//根据是否snake1来判断localDir与哪条蛇方向不同时发送消息
+		if(isSnake1) {   
+			if (localDir != snake1.dir) {
+				socket.emit('dir', localDir);
+			}
+		}
+		else {
+			if (localDir != snake2.dir) {
+				socket.emit('dir', localDir)
+			}
+		}
+		///////////////////////////////////////////////////
+	}); 
+///////////////////////////////////////////////////////////////////////////////////////
+	
+	function gloop () {  //game loop
+		update();
+		drawSnakeAndFood();  //不知道为什么，把它放前面，捕捉事件的反应会慢
+		tid = setTimeout(gloop, 200);
+	}
+	</script>
+</body>
+</html>
