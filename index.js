@@ -2,7 +2,10 @@ var app = require('express')();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
-server.listen(80);
+server.listen(process.env.PORT || 3000, process.env.IP || "0.0.0.0", function(){  //保证监听正确的ip和端口
+  var addr = server.address();
+  console.log("Server listening at", addr.address + ":" + addr.port);
+});
 
 app.get('/', function (req, res) {
   res.sendfile(__dirname + '/online_snake_battle.html');

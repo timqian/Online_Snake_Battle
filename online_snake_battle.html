@@ -15,7 +15,7 @@
 </head>
 <body>
 	<canvas id="c" width="400" height="400"></canvas>
-	<p>用ASDW键控制，不要直接后退</p>
+	<p>用ASDW键控制方向</p>
 
 	<script type="text/javascript" src='snakeAndFood.js'></script>
 	<script src="/socket.io/socket.io.js"></script>
@@ -57,6 +57,10 @@
 		ctx.mset('fillStyle', '#e96900').mset('font', 'bold 24px 宋体').mdo('fillText', ['游戏结束', (c.width - 24 * 4) / 2, (c.height - 24) / 2]); 
 	}
 
+	function drawWait () {  //写game over
+		ctx.mset('fillStyle', '#e96900').mset('font', 'bold 24px 宋体').mdo('fillText', ['等待对手', (c.width - 24 * 4) / 2, (c.height - 24) / 2]); 
+	}
+
 	function drawSnakeAndFood () {
 		ctx.mset('fillStyle', '#f1fedd').mdo('fillRect', [0, 0, c.width, c.height]); //画画布
 		food.draw('food');
@@ -79,7 +83,7 @@ socket.on('snake1', function(){
 
 var tid;
 socket.on('start', function(){
-	tid = setTimeout(gloop, 200);
+	tid = setTimeout(gloop, 400);
 });
 
 socket.on('dir', function(data) {  //接受服务端dir
@@ -156,11 +160,11 @@ else {
 		///////////////////////////////////////////////////
 	}); 
 ///////////////////////////////////////////////////////////////////////////////////////
-	
+	drawWait();
 	function gloop () {  //game loop
 		update();
 		drawSnakeAndFood();  //不知道为什么，把它放前面，捕捉事件的反应会慢
-		tid = setTimeout(gloop, 200);
+		tid = setTimeout(gloop, 400);
 	}
 	</script>
 </body>
