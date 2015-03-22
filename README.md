@@ -1,7 +1,7 @@
 # Snake_Battle
 
-* 试玩：
-* 项目地址：https://github.com/timqian/Online_Snake_Battle
+* 试玩(并非长期有效)：[https://online-snake-battle-timqian1-2.c9.io/](https://online-snake-battle-timqian1-2.c9.io/)
+* 代码：[github.com/timqian/Online_Snake_Battle](https://github.com/timqian/Online_Snake_Battle)
 
 从前，我用html5 制作了一个叫做“贪吃蛇大战”的小游戏（你可以在[这里]()试玩）。上个月，在翻看 node.js 教程的过程中发现了 socket.io 这个模块。socket.io可以实现网页与服务器间的实时通信（参考[socket.io官网](http://socket.io/)）。于是我就想着把“贪吃蛇大战”，做成“网络贪吃蛇大战”，让玩家只要打开网站，就可以与对手厮杀。
 
@@ -27,10 +27,10 @@ js根据两条蛇的前进方向，以一定的周期更新画面
 
 由于有多条蛇参与，因此使用了javascript的生成函数和prototype方法，先定义了Snake对象的生成函数。这样，就可以利用 `new Snake()` 的方式来定义新的蛇，有代码复用，和程序模块化两点好处。
 
-## 这是一个失败的项目，但是学到不少东西
+## 存在的问题
 
 画面是按照固定时间隔刷新的（在本地刷新），服务器与客户端的通信内容只涉及到snake的方向改变。这样的好处是减少了信息传递，加快传输速度。但是问题在于：由于网络条件的不同，snake方向改变的信息到达两个客户端的时间可能会不同。这样就导致了两个客户端上的状况不一样。这个缺陷使得游戏没办法玩（除非把蛇的运动速度设定的很慢）。。。
 
-## 解决方式
+## 解决方案
 
 画面的刷新由服务端控制。。。如果你有兴趣的话，欢迎fock我的代码，改进这个游戏。
